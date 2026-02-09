@@ -1,19 +1,30 @@
--- Users table
 CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  last_login DATETIME,
-  is_active BOOLEAN DEFAULT 1
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_login DATETIME,
+    is_active BOOLEAN DEFAULT 1,
+    ip_address TEXT,
+    freeform_location TEXT,     
+    city TEXT,
+    region TEXT,
+    country TEXT,
+    browser TEXT,
+    browser_version TEXT,
+    os TEXT,
+    os_version TEXT,
+    device_type TEXT,   
+    locale TEXT,
+    timezone TEXT
 );
 
 -- Identities (provider-specific user data)
 CREATE TABLE IF NOT EXISTS identities (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  provider TEXT NOT NULL, -- 'google', 'github', etc.
+  provider TEXT NOT NULL, 
   provider_user_id TEXT NOT NULL,
   provider_email TEXT,
   provider_profile_url TEXT,
@@ -24,7 +35,7 @@ CREATE TABLE IF NOT EXISTS identities (
   UNIQUE(provider, provider_user_id)
 );
 
--- Auth requests (OAuth sessions - state, nonce, PKCE)
+
 CREATE TABLE IF NOT EXISTS auth_requests (
   id TEXT PRIMARY KEY,
   state TEXT UNIQUE NOT NULL,
@@ -33,16 +44,16 @@ CREATE TABLE IF NOT EXISTS auth_requests (
   provider TEXT NOT NULL,
   client_id TEXT NOT NULL,
   redirect_uri TEXT NOT NULL,
-  scopes TEXT, -- comma-separated
+  scopes TEXT, 
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   expires_at DATETIME NOT NULL
 );
 
--- Refresh tokens (hashed)
+
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  token_hash TEXT UNIQUE NOT NULL, -- sha256(token)
+  token_hash TEXT UNIQUE NOT NULL, 
   client_id TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   expires_at DATETIME NOT NULL,
@@ -51,32 +62,32 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- OAuth client applications (for multi-tenant SSO)
+
 CREATE TABLE IF NOT EXISTS oauth_clients (
   client_id TEXT PRIMARY KEY,
   client_secret_hash TEXT NOT NULL,
   name TEXT NOT NULL,
-  redirect_uris TEXT NOT NULL, -- JSON array
-  scopes TEXT NOT NULL, -- comma-separated allowed scopes
+  redirect_uris TEXT NOT NULL, 
+  scopes TEXT NOT NULL, 
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   is_active BOOLEAN DEFAULT 1
 );
 
--- Audit logs
+
 CREATE TABLE IF NOT EXISTS audit_logs (
   id TEXT PRIMARY KEY,
   user_id TEXT,
-  event_type TEXT NOT NULL, -- 'login', 'logout', 'token_refresh', 'mfa_created', etc.
+  event_type TEXT NOT NULL, 
   provider TEXT,
   ip_address TEXT,
   user_agent TEXT,
-  status TEXT, -- 'success', 'failure'
+  status TEXT, 
   error_message TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Indexes for common queries
+
 CREATE INDEX IF NOT EXISTS idx_identities_user_id ON identities(user_id);
 CREATE INDEX IF NOT EXISTS idx_identities_provider_id ON identities(provider, provider_user_id);
 CREATE INDEX IF NOT EXISTS idx_auth_requests_state ON auth_requests(state);
