@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
-    const payload = await verifyJWT(accessToken, jwtSecret);
+    const payload = await verifyJWT(accessToken);
 
     if (!payload) {
       return NextResponse.json(

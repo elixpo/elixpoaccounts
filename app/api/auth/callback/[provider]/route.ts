@@ -137,19 +137,16 @@ export async function GET(
     //   providerProfileUrl: userInfo.picture,
     // });
 
-    // Step 4: Create tokens
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+    // Create tokens
     const accessToken = await createAccessToken(
       userId,
       email,
-      jwtSecret,
-      parseInt(process.env.JWT_EXPIRATION_MINUTES || '15')
+      provider.toLowerCase() as 'google' | 'github'
     );
 
-    const refreshToken = await createRefreshTokenJWT(
+    const refreshToken = await createRefreshToken(
       userId,
-      jwtSecret,
-      parseInt(process.env.REFRESH_TOKEN_EXPIRATION_DAYS || '30')
+      provider.toLowerCase() as 'google' | 'github'
     );
 
     const refreshTokenHash = hashString(refreshToken);

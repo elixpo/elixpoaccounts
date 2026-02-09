@@ -40,10 +40,9 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
 
     // Verify JWT
-    const payload = await verifyJWT(token, jwtSecret);
+    const payload = await verifyJWT(token);
 
     if (!payload) {
       return NextResponse.json(
@@ -94,9 +93,8 @@ export async function GET(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
 
-    const payload = await verifyJWT(token, jwtSecret);
+    const payload = await verifyJWT(token);
 
     if (!payload) {
       return NextResponse.json(

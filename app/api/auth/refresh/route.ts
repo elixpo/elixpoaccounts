@@ -18,10 +18,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
-
     // Verify refresh token
-    const payload = await verifyJWT(refreshToken, jwtSecret);
+    const payload = await verifyJWT(refreshToken);
 
     if (!payload || payload.type !== 'refresh') {
       return NextResponse.json(
@@ -45,8 +43,7 @@ export async function POST(request: NextRequest) {
     const newAccessToken = await createAccessToken(
       payload.sub,
       payload.email,
-      jwtSecret,
-      parseInt(process.env.JWT_EXPIRATION_MINUTES || '15')
+      payload.provider
     );
 
     const response = NextResponse.json({

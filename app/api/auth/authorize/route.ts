@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateRandomString, generatePKCE, generateNonce, generateUUID } from '@/lib/crypto';
 import { getOAuthConfig } from '@/lib/oauth-config';
 
-/**
- * GET /api/auth/authorize?provider=google&redirect_uri=...
- * Initiates OAuth flow by generating state, nonce, and PKCE values
- * Stores them in Cloudflare KV with TTL
- * Returns authorization URL to redirect user to provider
- */
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -21,7 +16,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get OAuth config for provider
     const config = getOAuthConfig(provider, {
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
@@ -36,13 +30,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Generate OAuth parameters
+
     const state = generateRandomString(32);
     const nonce = generateNonce();
     const { verifier: pkceVerifier, challenge: pkceChallenge } = generatePKCE();
-
-    // Store in KV (we'll move this to D1 in the callback route)
-    // The authRequestId will be referenced in the callback
     const authRequestId = generateUUID();
     
     // For now, store minimal state in cookies (will be validated in callback)

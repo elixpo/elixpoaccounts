@@ -7,12 +7,12 @@ import type { D1Database } from '@cloudflare/workers-types';
 
 export async function createUser(
   db: D1Database,
-  { id, email }: { id: string; email: string }
+  { id, email, passwordHash }: { id: string; email: string; passwordHash?: string }
 ) {
   const stmt = db.prepare(
-    'INSERT INTO users (id, email) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET updated_at = CURRENT_TIMESTAMP'
+    'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET updated_at = CURRENT_TIMESTAMP'
   );
-  return await stmt.bind(id, email).run();
+  return await stmt.bind(id, email, passwordHash || null).run();
 }
 
 export async function getUserById(db: D1Database, userId: string) {
@@ -22,6 +22,11 @@ export async function getUserById(db: D1Database, userId: string) {
 
 export async function getUserByEmail(db: D1Database, email: string) {
   const stmt = db.prepare('SELECT * FROM users WHERE email = ? AND is_active = 1');
+  return await stmt.bind(email).first();
+}
+
+export async function getUserByEmailWithPassword(db: D1Database, email: string) {
+  const stmt = db.prepare('SELECT id, email, password_hash FROM users WHERE email = ? AND is_active = 1');
   return await stmt.bind(email).first();
 }
 
