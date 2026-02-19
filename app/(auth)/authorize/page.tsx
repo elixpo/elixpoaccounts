@@ -109,13 +109,14 @@ export default function AuthorizePage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-red-50 to-red-100">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Authorization Error</h1>
-          <p className="text-gray-700 mb-6">{error}</p>
+      <div className="flex items-center justify-center min-h-screen p-2" style={{ background: 'linear-gradient(135deg, #0c0f0a 0%, #0f1410 50%, #0c0f0a 100%)' }}>
+        <div className="rounded-lg shadow-lg p-8 max-w-md w-full text-center" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <h1 className="text-2xl font-bold mb-4" style={{ color: '#ff6b6b' }}>Authorization Error</h1>
+          <p className="mb-6" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>{error}</p>
           <button
             onClick={() => router.push('/login')}
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+            className="font-semibold py-2 px-4 rounded-lg transition"
+            style={{ background: 'rgba(255, 107, 107, 0.15)', color: '#ff6b6b', border: '1px solid rgba(255, 107, 107, 0.3)' }}
           >
             Return to Login
           </button>
@@ -126,39 +127,35 @@ export default function AuthorizePage() {
 
   if (!authRequest) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading authorization request...</p>
+      <div className="flex items-center justify-center min-h-screen p-2" style={{ background: 'linear-gradient(135deg, #0c0f0a 0%, #0f1410 50%, #0c0f0a 100%)' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 mx-auto mb-4" style={{ borderBottom: '2px solid #a3e635' }}></div>
+          <p style={{ color: '#a3e635' }}>Loading authorization request...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="flex items-center justify-center min-h-screen p-2" style={{ background: 'linear-gradient(135deg, #0c0f0a 0%, #0f1410 50%, #0c0f0a 100%)' }}>
       <div className="w-full max-w-md">
-        {/* Handshake Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-8 text-center">
-            <h1 className="text-2xl font-bold text-white mb-2">Authorization Request</h1>
-            <p className="text-blue-100">Secure application access</p>
+        <div className="rounded-2xl shadow-2xl overflow-hidden backdrop-blur-lg" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <div className="px-6 py-8 text-center" style={{ background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1) 0%, rgba(163, 230, 53, 0.05) 100%)', borderBottom: '1px solid rgba(163, 230, 53, 0.2)' }}>
+            <h1 className="text-2xl font-bold mb-2" style={{ color: '#a3e635' }}>Authorization Request</h1>
+            <p style={{ color: 'rgba(163, 230, 53, 0.7)' }}>Secure application access</p>
           </div>
 
-          {/* Content */}
           <div className="p-8">
-            {/* Handshake Visualization */}
             <div className="flex items-center justify-center mb-8">
               <div className="text-center">
-                {/* Your Application (Left) */}
                 <div className="flex flex-col items-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg mb-3">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-3" style={{ background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(163, 230, 53, 0.1) 100%)', border: '2px solid rgba(163, 230, 53, 0.3)' }}>
                     <svg
-                      className="w-8 h-8 text-white"
+                      className="w-8 h-8"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
+                      style={{ color: '#a3e635' }}
                     >
                       <path
                         strokeLinecap="round"
@@ -168,22 +165,22 @@ export default function AuthorizePage() {
                       />
                     </svg>
                   </div>
-                  <p className="text-sm font-semibold text-gray-800">Elixpo Accounts</p>
-                  <p className="text-xs text-gray-500">Your Identity Provider</p>
+                  <p className="text-sm font-semibold mb-0.5" style={{ color: '#f5f5f4' }}>Elixpo Accounts</p>
+                  <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Your Identity Provider</p>
                 </div>
 
                 {/* Handshake Arrow */}
                 <div className="flex items-center justify-center mb-4">
                   <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <div className="w-8 h-0.5 bg-linear-to-r from-green-500 to-green-400"></div>
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#a3e635' }}></div>
+                    <div className="w-8 h-0.5" style={{ background: 'linear-gradient(90deg, #a3e635 0%, rgba(163, 230, 53, 0.4) 100%)' }}></div>
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#a3e635' }}></div>
                   </div>
                 </div>
 
                 {/* Client Application (Right) */}
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg mb-3 overflow-hidden">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-3 overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.05)', border: '2px solid rgba(163, 230, 53, 0.2)' }}>
                     {clientFavicon ? (
                       <Image
                         src={clientFavicon}
@@ -196,22 +193,22 @@ export default function AuthorizePage() {
                         }}
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(163, 230, 53, 0.1) 100%)' }}>
+                        <span className="text-sm font-bold" style={{ color: '#a3e635' }}>
                           {authRequest.clientName.charAt(0)}
                         </span>
                       </div>
                     )}
                   </div>
-                  <p className="text-sm font-semibold text-gray-800">{authRequest.clientName}</p>
-                  <p className="text-xs text-gray-500">Requesting Access</p>
+                  <p className="text-sm font-semibold mb-0.5" style={{ color: '#f5f5f4' }}>{authRequest.clientName}</p>
+                  <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Requesting Access</p>
                 </div>
               </div>
             </div>
 
             {/* Authorization Details */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 mb-3">
+            <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(163, 230, 53, 0.05)', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+              <h2 className="text-sm font-semibold mb-3" style={{ color: '#f5f5f4' }}>
                 {authRequest.clientName} is requesting access to:
               </h2>
               <ul className="space-y-2">
@@ -219,9 +216,10 @@ export default function AuthorizePage() {
                   authRequest.scopes.map((scope) => (
                     <li key={scope} className="flex items-start gap-2">
                       <svg
-                        className="w-4 h-4 text-green-600 mt-0.5 shrink-0"
+                        className="w-4 h-4 mt-0.5 shrink-0"
                         fill="currentColor"
                         viewBox="0 0 20 20"
+                        style={{ color: '#a3e635' }}
                       >
                         <path
                           fillRule="evenodd"
@@ -229,7 +227,7 @@ export default function AuthorizePage() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                         {scope === 'profile' && 'Your profile information'}
                         {scope === 'email' && 'Your email address'}
                         {scope === 'openid' && 'OpenID authentication'}
@@ -240,9 +238,10 @@ export default function AuthorizePage() {
                 ) : (
                   <li className="flex items-start gap-2">
                     <svg
-                      className="w-4 h-4 text-green-600 mt-0.5 shrink-0"
+                      className="w-4 h-4 mt-0.5 shrink-0"
                       fill="currentColor"
                       viewBox="0 0 20 20"
+                      style={{ color: '#a3e635' }}
                     >
                       <path
                         fillRule="evenodd"
@@ -250,16 +249,16 @@ export default function AuthorizePage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-sm text-gray-700">Basic authentication</span>
+                    <span className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Basic authentication</span>
                   </li>
                 )}
               </ul>
             </div>
 
             {/* Information Text */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-xs text-gray-700 leading-relaxed">
-                <span className="font-semibold text-blue-900">Secure Authorization:</span> You are
+            <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(163, 230, 53, 0.08)', border: '1px solid rgba(163, 230, 53, 0.15)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <span className="font-semibold" style={{ color: '#a3e635' }}>Secure Authorization:</span> You are
                 being redirected to authorize your account. Only Elixpo-verified applications can
                 request access. You can revoke access at any time in your account settings.
               </p>
@@ -270,14 +269,16 @@ export default function AuthorizePage() {
               <button
                 onClick={handleDeny}
                 disabled={isLoading}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 font-semibold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(163, 230, 53, 0.1)', color: '#a3e635', border: '1px solid rgba(163, 230, 53, 0.3)' }}
               >
                 Deny
               </button>
               <button
                 onClick={handleAuthorize}
                 disabled={isLoading}
-                className="flex-1 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 font-semibold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: 'rgba(163, 230, 53, 0.15)', color: '#a3e635', border: '1px solid rgba(163, 230, 53, 0.3)' }}
               >
                 {isLoading ? (
                   <>
@@ -320,11 +321,12 @@ export default function AuthorizePage() {
             </div>
 
             {/* Footer */}
-            <p className="text-xs text-gray-500 text-center mt-4">
+            <p className="text-xs text-center mt-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
               Don't recognize this app?{' '}
               <button
                 onClick={() => router.push('/login')}
-                className="text-blue-600 hover:text-blue-700 font-semibold"
+                className="font-semibold hover:opacity-80"
+                style={{ color: '#a3e635' }}
               >
                 Go back to safety
               </button>
@@ -333,7 +335,7 @@ export default function AuthorizePage() {
         </div>
 
         {/* Security Notice */}
-        <div className="mt-6 text-center text-sm text-gray-400">
+        <div className="mt-6 text-center text-sm" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
           <p>🔒 This connection is encrypted and secure</p>
         </div>
       </div>
