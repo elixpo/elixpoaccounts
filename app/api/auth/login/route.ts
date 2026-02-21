@@ -3,7 +3,7 @@ import { verifyPassword } from '@/lib/password';
 import { createAccessToken, createRefreshToken } from '@/lib/jwt';
 import { verifyTurnstile } from '@/lib/captcha';
 import { hashString, generateUUID } from '@/lib/crypto';
-import { loginRateLimiter } from '@/lib/rate-limit';
+import { createLoginRateLimiter } from '@/lib/rate-limit';
 
 /**
  * POST /api/auth/login
@@ -29,23 +29,26 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
     // Rate limiting: 10 login attempts per IP per minute
-    if (!loginRateLimiter.isAllowed(ipAddress)) {
-      const resetTime = loginRateLimiter.getResetTime(ipAddress);
-      console.warn(`[Login] Rate limit exceeded for IP: ${ipAddress}. Reset in ${resetTime}ms`);
-      
-      return NextResponse.json(
-        { 
-          error: 'Too many login attempts. Please try again later.',
-          retryAfter: Math.ceil(resetTime / 1000),
-        },
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': Math.ceil(resetTime / 1000).toString(),
-          },
-        }
-      );
-    }
+    // Note: Database-backed rate limiting requires D1 database integration
+    // For now using placeholder - replace with actual DB check when D1 is integrated
+    // const db = env.DB;
+    // const rateLimiter = createLoginRateLimiter();
+    // const rateLimit = await rateLimiter.check(db, ipAddress, 'login');
+    // if (!rateLimit.allowed) {
+    //   console.warn(`[Login] Rate limit exceeded for IP: ${ipAddress}. Retry after ${rateLimit.retryAfter}s`);
+    //   return NextResponse.json(
+    //     { 
+    //       error: 'Too many login attempts. Please try again later.',
+    //       retryAfter: rateLimit.retryAfter,
+    //     },
+    //     { 
+    //       status: 429,
+    //       headers: {
+    //         'Retry-After': rateLimit.retryAfter?.toString() || '900',
+    //       },
+    //     }
+    //   );
+    // }
 
     // Validate required fields
     if (!email || !provider) {

@@ -3,7 +3,7 @@ import { generateUUID, hashString } from '@/lib/crypto';
 import { createAccessToken, createRefreshToken } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
 import { verifyTurnstile } from '@/lib/captcha';
-import { registerRateLimiter } from '@/lib/rate-limit';
+import { createRegisterRateLimiter } from '@/lib/rate-limit';
 
 /**
  * POST /api/auth/register
@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip') || 'unknown';
 
     // Rate limiting: 5 registration attempts per IP per minute
-    if (!registerRateLimiter.isAllowed(ipAddress)) {
-      const resetTime = registerRateLimiter.getResetTime(ipAddress);
+    if (!createRegisterRateLimiter.isAllowed(ipAddress)) {
+      const resetTime = createRegisterRateLimiter.getResetTime(ipAddress);
       console.warn(`[Register] Rate limit exceeded for IP: ${ipAddress}`);
       
       return NextResponse.json(
