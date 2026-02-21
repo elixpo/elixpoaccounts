@@ -216,8 +216,6 @@ UPDATE users SET is_admin = 1, role = 'admin' WHERE email = 'admin@example.com';
 - [ ] Email alerts for suspicious activities
 - [ ] User export/import functionality
 - [ ] Advanced analytics and reporting
-- [ ] Two-factor authentication (2FA) for admins
-- [ ] IP whitelist for admin access
 - [ ] Webhook management interface
 - [ ] API key management for integrations
 - [ ] Custom permission levels
