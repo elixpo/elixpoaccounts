@@ -1,84 +1,12 @@
-CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    password_hash TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_login DATETIME,
-    is_active BOOLEAN DEFAULT 1,
-    email_verified BOOLEAN DEFAULT 0,
-    email_verified_at DATETIME,
-    ip_address TEXT,
-    freeform_location TEXT,     
-    city TEXT,
-    region TEXT,
-    country TEXT,
-    browser TEXT,
-    browser_version TEXT,
-    os TEXT,
-    os_version TEXT,
-    device_type TEXT,   
-    locale TEXT,
-    timezone TEXT,
-    role TEXT DEFAULT 'user',
-    is_admin BOOLEAN DEFAULT 0
-);
+-- Migration 0002: Add missing columns and tables to existing schema
 
--- Identities (provider-specific user data)
-CREATE TABLE IF NOT EXISTS identities (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  provider TEXT NOT NULL, 
-  provider_user_id TEXT NOT NULL,
-  provider_email TEXT,
-  provider_profile_url TEXT,
-  verified BOOLEAN DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE(provider, provider_user_id)
-);
+-- Add missing columns to users table
+ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user';
+ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0;
 
--- Email Verification Tokens (for email verification via OTP or link)
-CREATE TABLE IF NOT EXISTS email_verification_tokens (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  email TEXT NOT NULL,
-  otp_code TEXT NOT NULL,
-  verification_token TEXT NOT NULL,
-  is_verified BOOLEAN DEFAULT 0,
-  verified_at DATETIME,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATETIME NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS auth_requests (
-  id TEXT PRIMARY KEY,
-  state TEXT UNIQUE NOT NULL,
-  nonce TEXT NOT NULL,
-  pkce_verifier TEXT NOT NULL,
-  provider TEXT NOT NULL,
-  client_id TEXT NOT NULL,
-  redirect_uri TEXT NOT NULL,
-  scopes TEXT, 
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATETIME NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS refresh_tokens (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  token_hash TEXT UNIQUE NOT NULL, 
-  client_id TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATETIME NOT NULL,
-  revoked BOOLEAN DEFAULT 0,
-  revoked_at DATETIME,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS oauth_clients (
+-- Recreate oauth_clients table with all columns
+-- First, create a new table with the correct schema
+CREATE TABLE IF NOT EXISTS oauth_clients_new (
   client_id TEXT PRIMARY KEY,
   client_secret_hash TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -94,7 +22,19 @@ CREATE TABLE IF NOT EXISTS oauth_clients (
   FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Application Usage Statistics
+-- Copy data from old table if it exists and has data
+INSERT INTO oauth_clients_new (client_id, client_secret_hash, name, redirect_uris, scopes, created_at, is_active, owner_id)
+SELECT client_id, client_secret_hash, name, redirect_uris, scopes, created_at, is_active, client_id
+FROM oauth_clients
+WHERE client_id IN (SELECT client_id FROM oauth_clients LIMIT 0);
+
+-- Drop old table
+DROP TABLE IF EXISTS oauth_clients;
+
+-- Rename new table
+ALTER TABLE oauth_clients_new RENAME TO oauth_clients;
+
+-- Create missing tables if they don't exist
 CREATE TABLE IF NOT EXISTS app_stats (
   id TEXT PRIMARY KEY,
   client_id TEXT NOT NULL,
@@ -108,7 +48,6 @@ CREATE TABLE IF NOT EXISTS app_stats (
   UNIQUE(client_id, date)
 );
 
--- Admin Activity Log
 CREATE TABLE IF NOT EXISTS admin_logs (
   id TEXT PRIMARY KEY,
   admin_id TEXT NOT NULL,
@@ -124,37 +63,20 @@ CREATE TABLE IF NOT EXISTS admin_logs (
   FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id TEXT PRIMARY KEY,
-  user_id TEXT,
-  event_type TEXT NOT NULL, 
-  provider TEXT,
-  ip_address TEXT,
-  user_agent TEXT,
-  status TEXT, 
-  error_message TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-);
-
-
--- Rate Limiting Table for Login, Register, and Password Reset
 CREATE TABLE IF NOT EXISTS rate_limits (
   id TEXT PRIMARY KEY,
   ip_address TEXT NOT NULL,
-  endpoint TEXT NOT NULL, -- 'login', 'register', 'password_reset'
+  endpoint TEXT NOT NULL,
   attempt_count INTEGER DEFAULT 1,
   first_attempt_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_attempt_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  window_reset_at DATETIME NOT NULL, -- When the rate limit window resets
+  window_reset_at DATETIME NOT NULL,
   is_blocked BOOLEAN DEFAULT 0,
   blocked_until DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(ip_address, endpoint)
 );
-
-
 
 -- Create Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_identities_user_id ON identities(user_id);
