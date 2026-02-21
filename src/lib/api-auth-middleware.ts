@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { validateApiKey, logApiKeyUsage, hasScope, ApiKeyScopes } from './api-key-service';
+import { validateApiKey, hasScope, ApiKeyScopes } from './api-key-service';
+import { checkApiKeyRateLimit as checkRateLimit, logApiKeyUsage } from './api-rate-limiter';
 
 export interface ApiAuthContext {
   apiKeyId: string;
@@ -84,21 +85,28 @@ export async function validateApiKeyMiddleware(
 
 /**
  * Check rate limiting for API key
- * 
- * For production, implement actual rate limiting using:
- * - Database: Store request counts per API key
- * - Redis/Memcached: In-memory rate limiting for better performance
+ * Uses sliding window approach with minute-based tracking
  */
 export async function checkApiKeyRateLimit(
   context: ApiAuthContext
-): Promise<{ allowed: boolean; retryAfter?: number }> {
-  // TODO: Implement actual rate limiting based on:
-  // - context.rateLimitRequests (max requests allowed)
-  // - context.rateLimitWindow (time window in seconds)
-  // - context.apiKeyId (to track per-key usage)
-  
-  // For now, all requests are allowed
-  return { allowed: true };
+): Promise<{ allowed: boolean; retryAfter?: number; remaining?: number }> {
+  try {
+    const rateLimitStatus = await checkRateLimit(
+      context.apiKeyId,
+      context.rateLimitRequests,
+      context.rateLimitWindow
+    );
+
+    return {
+      allowed: rateLimitStatus.allowed,
+      retryAfter: rateLimitStatus.retryAfter,
+      remaining: rateLimitStatus.remainingRequests,
+    };
+  } catch (error) {
+    console.error('Rate limit check error:', error);
+    // Default to allowing on error (graceful degradation)
+    return { allowed: true };
+  }
 }
 
 /**
@@ -152,14 +160,23 @@ export function withApiAuth(
 
     // Check rate limiting
     const rateLimitCheck = await checkApiKeyRateLimit(context);
+    
+    // Build rate limit headers
+    const rateLimitHeaders: Record<string, string> = {
+      'X-RateLimit-Limit': context.rateLimitRequests.toString(),
+      'X-RateLimit-Window': context.rateLimitWindow.toString(),
+      'X-RateLimit-Remaining': (rateLimitCheck.remaining ?? 0).toString(),
+    };
+
     if (!rateLimitCheck.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded' },
         { 
           status: 429,
-          headers: rateLimitCheck.retryAfter 
-            ? { 'Retry-After': rateLimitCheck.retryAfter.toString() }
-            : {},
+          headers: {
+            ...rateLimitHeaders,
+            'Retry-After': (rateLimitCheck.retryAfter ?? 60).toString(),
+          },
         }
       );
     }
@@ -171,6 +188,11 @@ export function withApiAuth(
       // Log request
       await logApiRequest(context, request, response.status, responseTime);
       
+      // Add rate limit headers to successful responses
+      Object.entries(rateLimitHeaders).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      
       return response;
     } catch (error) {
       const responseTime = Date.now() - startTime;
@@ -179,7 +201,10 @@ export function withApiAuth(
       console.error('API handler error:', error);
       return NextResponse.json(
         { error: 'Internal server error' },
-        { status: 500 }
+        { 
+          status: 500,
+          headers: rateLimitHeaders,
+        }
       );
     }
   };
