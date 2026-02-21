@@ -6,7 +6,7 @@ compatibility_date = "2025-12-16"
 [[d1_databases]]
 binding = "DB"
 database_name = "elixpo_auth"
-database_id = "your-database-id-here"
+database_id = "0be1c3e1-cc06-486a-917e-a0918b8d2506"
 
 # Cloudflare KV Namespaces - Configure these after creating KV namespaces
 # [[kv_namespaces]]
