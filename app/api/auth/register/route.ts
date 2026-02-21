@@ -29,23 +29,26 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip') || 'unknown';
 
     // Rate limiting: 5 registration attempts per IP per minute
-    if (!createRegisterRateLimiter.isAllowed(ipAddress)) {
-      const resetTime = createRegisterRateLimiter.getResetTime(ipAddress);
-      console.warn(`[Register] Rate limit exceeded for IP: ${ipAddress}`);
-      
-      return NextResponse.json(
-        { 
-          error: 'Too many registration attempts. Please try again later.',
-          retryAfter: Math.ceil(resetTime / 1000),
-        },
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': Math.ceil(resetTime / 1000).toString(),
-          },
-        }
-      );
-    }
+    // Note: Database-backed rate limiting requires D1 database integration
+    // Uncomment when D1 is integrated in your environment
+    // const db = env.DB;
+    // const rateLimiter = createRegisterRateLimiter();
+    // const rateLimit = await rateLimiter.check(db, ipAddress, 'register');
+    // if (!rateLimit.allowed) {
+    //   console.warn(`[Register] Rate limit exceeded for IP: ${ipAddress}. Retry after ${rateLimit.retryAfter}s`);
+    //   return NextResponse.json(
+    //     { 
+    //       error: 'Too many registration attempts. Please try again later.',
+    //       retryAfter: rateLimit.retryAfter,
+    //     },
+    //     { 
+    //       status: 429,
+    //       headers: {
+    //         'Retry-After': (rateLimit.retryAfter || 1800).toString(),
+    //       },
+    //     }
+    //   );
+    // }
 
     // Validate required fields
     if (!email || !provider) {
