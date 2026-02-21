@@ -62,7 +62,6 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   }
 }
 
-// Email Template Helpers
 export const emailTemplates = {
   // OTP Verification Email
   otp: (recipientName: string, otpCode: string, expiryMinutes: number = 10) => ({
