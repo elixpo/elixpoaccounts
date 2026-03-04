@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getOAuthClientById, updateOAuthClient } from '@/lib/db';
 import { getDatabase } from '@/lib/d1-client';

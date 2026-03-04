@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { hashString } from '@/lib/crypto';
 import { revokeRefreshToken } from '@/lib/db';

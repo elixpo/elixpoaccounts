@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminSession } from '../../../../src/lib/admin-middleware';
 import { listAdminUsers, countUsers, setUserAdminStatus, setUserActiveStatus, logAdminAction } from '../../../../src/lib/db';

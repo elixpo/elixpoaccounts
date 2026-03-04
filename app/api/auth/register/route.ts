@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { generateUUID, hashString } from '@/lib/crypto';
 import { createAccessToken, createRefreshToken } from '@/lib/jwt';
