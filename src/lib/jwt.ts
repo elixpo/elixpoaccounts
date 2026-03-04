@@ -1,5 +1,4 @@
 import * as jose from 'jose';
-import { createSecretKey } from 'crypto';
 
 export interface JWTPayload {
   sub: string;
@@ -12,7 +11,7 @@ export interface JWTPayload {
 }
 
 
-export async function getSigningKey(): Promise<jose.KeyLike> {
+export async function getSigningKey(): Promise<jose.KeyLike | Uint8Array> {
   const isDev = process.env.NODE_ENV === 'development';
 
   if (isDev) {
@@ -21,7 +20,7 @@ export async function getSigningKey(): Promise<jose.KeyLike> {
     if (!secret || secret.length < 32) {
       throw new Error('JWT_SECRET must be at least 32 characters for production');
     }
-    return createSecretKey(Buffer.from(secret));
+    return new TextEncoder().encode(secret);
   }
 
   const privateKeyPEM = process.env.JWT_PRIVATE_KEY;
@@ -32,7 +31,7 @@ export async function getSigningKey(): Promise<jose.KeyLike> {
   return jose.importPKCS8(privateKeyPEM, 'EdDSA');
 }
 
-export async function getVerifyingKey(): Promise<jose.KeyLike> {
+export async function getVerifyingKey(): Promise<jose.KeyLike | Uint8Array> {
   const isDev = process.env.NODE_ENV === 'development';
 
   if (isDev) {
@@ -40,7 +39,7 @@ export async function getVerifyingKey(): Promise<jose.KeyLike> {
     if (!secret) {
       throw new Error('JWT_SECRET not found in environment');
     }
-    return createSecretKey(Buffer.from(secret));
+    return new TextEncoder().encode(secret);
   }
 
   const publicKeyPEM = process.env.JWT_PUBLIC_KEY;
