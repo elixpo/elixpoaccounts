@@ -22,6 +22,21 @@ export interface DashboardStats {
     requests: number;
     errors: number;
   }>;
+  recentUsers?: Array<{
+    id: string;
+    email: string;
+    is_admin: number;
+    is_active: number;
+    created_at: string;
+    email_verified: number;
+  }>;
+  recentApps?: Array<{
+    id: string;
+    client_id: string;
+    client_name: string;
+    owner_id: string;
+    created_at: string;
+  }>;
 }
 
 export function useDashboardStats(timeRange: string = '7d') {
