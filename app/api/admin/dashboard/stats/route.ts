@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminSession } from '../../../../../src/lib/admin-middleware';
 import { getAdminDashboardStats, getRequestTrend, getTopApps } from '../../../../../src/lib/db';
 import { getDatabase } from '../../../../../src/lib/d1-client';
+import { cacheGetOrSet } from '../../../../../src/lib/kv-cache';
 
 export async function GET(request: NextRequest) {
   const session = await verifyAdminSession(request);
@@ -21,19 +22,19 @@ export async function GET(request: NextRequest) {
 
     const daysBack = timeRange === '90d' ? 90 : timeRange === '30d' ? 30 : 7;
 
-    const db = await getDatabase();
-
-    const [stats, requestTrend, topApps] = await Promise.all([
-      getAdminDashboardStats(db, daysBack),
-      getRequestTrend(db, daysBack > 30 ? 30 : daysBack), // cap trend at 30 points
-      getTopApps(db, 5),
-    ]);
+    const result = await cacheGetOrSet(`admin:stats:${timeRange}`, 300, async () => {
+      const db = await getDatabase();
+      const [stats, requestTrend, topApps] = await Promise.all([
+        getAdminDashboardStats(db, daysBack),
+        getRequestTrend(db, daysBack > 30 ? 30 : daysBack),
+        getTopApps(db, 5),
+      ]);
+      return { ...stats, requestTrend, topApps };
+    });
 
     return NextResponse.json({
-      ...stats,
+      ...result,
       lastUpdated: new Date().toISOString(),
-      requestTrend,
-      topApps,
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);

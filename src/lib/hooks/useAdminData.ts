@@ -171,3 +171,70 @@ export function useApps(page: number = 1, search: string = '') {
 
   return { data, loading, error };
 }
+
+export interface AdminLog {
+  id: string;
+  adminId: string;
+  adminEmail: string | null;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  changes: string;
+  timestamp: string;
+  status: 'success' | 'failed';
+}
+
+export interface LogsResponse {
+  logs: AdminLog[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export function useAdminLogs(page: number = 1, search: string = '') {
+  const [data, setData] = useState<LogsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `/api/admin/logs?page=${page}`,
+          { credentials: 'include' }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch logs');
+        }
+
+        const responseData = await response.json();
+        const filtered = search
+          ? {
+              ...responseData,
+              logs: (responseData.logs || []).filter((l: AdminLog) =>
+                l.adminEmail?.toLowerCase().includes(search.toLowerCase()) ||
+                l.action.toLowerCase().includes(search.toLowerCase()) ||
+                l.resourceType?.toLowerCase().includes(search.toLowerCase())
+              ),
+            }
+          : responseData;
+        setData(filtered);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLogs();
+  }, [page, search]);
+
+  return { data, loading, error };
+}
