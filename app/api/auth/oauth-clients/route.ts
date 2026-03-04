@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     // Generate secure credentials
     const clientId = `cli_${generateRandomString(32)}`;
     const clientSecret = `secret_${generateRandomString(64)}`;
-    const clientSecretHash = hashString(clientSecret);
+    const clientSecretHash = await hashString(clientSecret);
 
     const now = new Date().toISOString();
 

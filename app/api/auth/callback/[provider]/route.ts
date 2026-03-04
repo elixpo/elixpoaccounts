@@ -151,7 +151,7 @@ export async function GET(
       provider.toLowerCase() as 'google' | 'github'
     );
 
-    const refreshTokenHash = hashString(refreshToken);
+    const refreshTokenHash = await hashString(refreshToken);
 
     // In production with D1:
     // await createRefreshToken(env.DB, {

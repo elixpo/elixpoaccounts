@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (refreshToken) {
       try {
         const db = await getDatabase();
-        const tokenHash = hashString(refreshToken);
+        const tokenHash = await hashString(refreshToken);
         await revokeRefreshToken(db, tokenHash);
         console.log('[Logout] Refresh token revoked');
       } catch (error) {

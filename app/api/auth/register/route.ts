@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
 
     // Store refresh token in database
     try {
-      const refreshTokenHash = hashString(refreshTokenJWT);
+      const refreshTokenHash = await hashString(refreshTokenJWT);
       await storeRefreshToken(db, {
         id: generateUUID(),
         userId,
