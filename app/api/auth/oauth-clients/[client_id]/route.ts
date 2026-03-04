@@ -1,13 +1,14 @@
 export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getOAuthClientById, updateOAuthClient } from '@/lib/db';
+import { verifyJWT } from '@/lib/jwt';
+import { getOAuthClientById, getOAuthClientByIdWithSecret, updateOAuthClient } from '@/lib/db';
 import { getDatabase } from '@/lib/d1-client';
 
 /**
  * PUT /api/auth/oauth-clients/[client_id]
  * UPDATE /api/auth/oauth-clients/[client_id]
- * 
+ *
  * Update OAuth application details
  */
 export async function PUT(
@@ -15,6 +16,12 @@ export async function PUT(
   { params }: { params: Promise<{ client_id: string }> }
 ) {
   try {
+    const token = request.cookies.get('access_token')?.value;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const payload = await verifyJWT(token);
+    if (!payload) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+
     const { client_id } = await params;
     const body = await request.json();
     const { name, redirect_uris, scopes } = body;
@@ -26,16 +33,18 @@ export async function PUT(
       );
     }
 
-    // TODO: Authenticate user and verify ownership of application
-    // const userId = await getUserFromToken(request);
-    // const app = await getOAuthClientById(db, client_id);
-    // if (!app || app.created_by !== userId) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    // }
+    const db = await getDatabase();
 
-    // Update in D1
+    // Verify ownership
+    const app = await getOAuthClientByIdWithSecret(db, client_id) as any;
+    if (!app) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+    if (app.owner_id !== payload.sub) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     try {
-      const db = await getDatabase();
       await updateOAuthClient(db, client_id, {
         ...(name && { name }),
         ...(redirect_uris && { redirectUris: JSON.stringify(redirect_uris) }),
@@ -64,7 +73,7 @@ export async function PUT(
 
 /**
  * DELETE /api/auth/oauth-clients/[client_id]
- * 
+ *
  * Deactivate an OAuth application
  */
 export async function DELETE(
@@ -72,6 +81,12 @@ export async function DELETE(
   { params }: { params: Promise<{ client_id: string }> }
 ) {
   try {
+    const token = request.cookies.get('access_token')?.value;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const payload = await verifyJWT(token);
+    if (!payload) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+
     const { client_id } = await params;
 
     if (!client_id) {
@@ -81,21 +96,18 @@ export async function DELETE(
       );
     }
 
-    // TODO: Authenticate user
-    // const userId = await getUserFromToken(request);
-    // if (!userId) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    const db = await getDatabase();
 
-    // TODO: Verify user owns this application
-    // const app = await getOAuthClientById(db, client_id);
-    // if (!app || app.created_by !== userId) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    // }
+    // Verify ownership
+    const app = await getOAuthClientByIdWithSecret(db, client_id) as any;
+    if (!app) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+    if (app.owner_id !== payload.sub) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-    // Deactivate in D1
     try {
-      const db = await getDatabase();
       await updateOAuthClient(db, client_id, { isActive: false });
     } catch (error) {
       console.error('[OAuth Client] Database delete error:', error);
@@ -122,7 +134,7 @@ export async function DELETE(
 
 /**
  * GET /api/auth/oauth-clients/[client_id]
- * 
+ *
  * Get OAuth application details (public info only)
  * Query params:
  *   - validate_redirect_uri: optional redirect URI to validate against registered URIs
@@ -132,6 +144,12 @@ export async function GET(
   { params }: { params: Promise<{ client_id: string }> }
 ) {
   try {
+    const token = request.cookies.get('access_token')?.value;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const payload = await verifyJWT(token);
+    if (!payload) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+
     const { client_id } = await params;
     const validateRedirectUri = request.nextUrl.searchParams.get('validate_redirect_uri');
 
